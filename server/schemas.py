@@ -1,4 +1,5 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, validate, validates, ValidationError
+from datetime import date
 
 
 class WorkoutExerciseSchema(Schema):
@@ -9,7 +10,6 @@ class WorkoutExerciseSchema(Schema):
     sets = fields.Int(load_default=None)
     duration_seconds = fields.Int(load_default=None)
 
-    # Nested summaries for when this is embedded in a Workout or Exercise response
     exercise = fields.Nested(
         lambda: ExerciseSchema(only=("id", "name", "category", "equipment_needed")),
         dump_only=True
@@ -19,34 +19,76 @@ class WorkoutExerciseSchema(Schema):
         dump_only=True
     )
 
+    # --- Schema Validations ---
+    @validates("sets")
+    def validate_sets(self, value):
+        if value is not None and value < 1:
+            raise ValidationError("sets must be a positive integer (>= 1).")
+
+    @validates("reps")
+    def validate_reps(self, value):
+        if value is not None and value < 1:
+            raise ValidationError("reps must be a positive integer (>= 1).")
+
+    @validates("duration_seconds")
+    def validate_duration_seconds(self, value):
+        if value is not None and value < 1:
+            raise ValidationError("duration_seconds must be a positive integer (>= 1).")
+
 
 class ExerciseSchema(Schema):
     id = fields.Int(dump_only=True)
-    name = fields.Str(required=True)
+    name = fields.Str(
+        required=True,
+        validate=validate.Length(min=1, error="Exercise name cannot be empty.")
+    )
     category = fields.Str(required=True)
     equipment_needed = fields.Bool(load_default=False)
 
-    # Nested join-table rows — only populated when fetching a single exercise
     workout_exercises = fields.List(
         fields.Nested(WorkoutExerciseSchema(only=("id", "workout_id", "reps", "sets", "duration_seconds", "workout"))),
         dump_only=True
     )
 
+    # --- Schema Validations ---
+    @validates("name")
+    def validate_name(self, value):
+        if not value or not value.strip():
+            raise ValidationError("Exercise name cannot be blank.")
+
+    @validates("category")
+    def validate_category(self, value):
+        allowed = {"Strength", "Cardio", "Flexibility", "Balance", "HIIT"}
+        if value not in allowed:
+            raise ValidationError(f"Category must be one of: {', '.join(sorted(allowed))}.")
+
 
 class WorkoutSchema(Schema):
     id = fields.Int(dump_only=True)
     date = fields.Date(required=True)
-    duration_minutes = fields.Int(required=True)
+    duration_minutes = fields.Int(
+        required=True,
+        validate=validate.Range(min=1, error="duration_minutes must be at least 1.")
+    )
     notes = fields.Str(load_default=None)
 
-    # Nested join-table rows with embedded exercise info — detail view only
     workout_exercises = fields.List(
         fields.Nested(WorkoutExerciseSchema(only=("id", "exercise_id", "reps", "sets", "duration_seconds", "exercise"))),
         dump_only=True
     )
 
+    # --- Schema Validations ---
+    @validates("duration_minutes")
+    def validate_duration(self, value):
+        if value < 1:
+            raise ValidationError("duration_minutes must be at least 1 minute.")
 
-# Shared instances so we don't re-instantiate schemas in every route
+    @validates("date")
+    def validate_date(self, value):
+        if value > date.today():
+            raise ValidationError("Workout date cannot be in the future.")
+
+
 exercise_schema = ExerciseSchema()
 exercises_schema = ExerciseSchema(many=True, exclude=("workout_exercises",))
 
