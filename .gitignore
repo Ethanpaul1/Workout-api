@@ -1,0 +1,31 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+venv/
+
+# SQLite database files
+*.db
+server/instance/
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Migrations (keep versions)
+migrations/versions/*.pyc
+
+# Pytest cache
+.pytest_cache/
+
+# Environment
+.env

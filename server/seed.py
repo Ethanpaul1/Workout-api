@@ -5,8 +5,13 @@ Safe to re-run: clears existing data before inserting fresh records.
 """
 
 from datetime import date
-from app import app
-from models import db, Exercise, Workout, WorkoutExercise
+
+try:
+    from server.app import app
+    from server.models import db, Exercise, Workout, WorkoutExercise
+except ImportError:
+    from app import app
+    from models import db, Exercise, Workout, WorkoutExercise
 
 with app.app_context():
 

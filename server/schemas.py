@@ -10,6 +10,7 @@ class WorkoutExerciseSchema(Schema):
     sets = fields.Int(load_default=None)
     duration_seconds = fields.Int(load_default=None)
 
+    # Use lambdas so these nested schemas can reference each other without circular import issues.
     exercise = fields.Nested(
         lambda: ExerciseSchema(only=("id", "name", "category", "equipment_needed")),
         dump_only=True
@@ -21,17 +22,17 @@ class WorkoutExerciseSchema(Schema):
 
     # --- Schema Validations ---
     @validates("sets")
-    def validate_sets(self, value):
+    def validate_sets(self, value, **kwargs):
         if value is not None and value < 1:
             raise ValidationError("sets must be a positive integer (>= 1).")
 
     @validates("reps")
-    def validate_reps(self, value):
+    def validate_reps(self, value, **kwargs):
         if value is not None and value < 1:
             raise ValidationError("reps must be a positive integer (>= 1).")
 
     @validates("duration_seconds")
-    def validate_duration_seconds(self, value):
+    def validate_duration_seconds(self, value, **kwargs):
         if value is not None and value < 1:
             raise ValidationError("duration_seconds must be a positive integer (>= 1).")
 
@@ -52,12 +53,12 @@ class ExerciseSchema(Schema):
 
     # --- Schema Validations ---
     @validates("name")
-    def validate_name(self, value):
+    def validate_name(self, value, **kwargs):
         if not value or not value.strip():
             raise ValidationError("Exercise name cannot be blank.")
 
     @validates("category")
-    def validate_category(self, value):
+    def validate_category(self, value, **kwargs):
         allowed = {"Strength", "Cardio", "Flexibility", "Balance", "HIIT"}
         if value not in allowed:
             raise ValidationError(f"Category must be one of: {', '.join(sorted(allowed))}.")
@@ -79,12 +80,12 @@ class WorkoutSchema(Schema):
 
     # --- Schema Validations ---
     @validates("duration_minutes")
-    def validate_duration(self, value):
+    def validate_duration(self, value, **kwargs):
         if value < 1:
             raise ValidationError("duration_minutes must be at least 1 minute.")
 
     @validates("date")
-    def validate_date(self, value):
+    def validate_date(self, value, **kwargs):
         if value > date.today():
             raise ValidationError("Workout date cannot be in the future.")
 

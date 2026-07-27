@@ -18,12 +18,14 @@ class Exercise(db.Model):
 
     equipment_needed = db.Column(db.Boolean, nullable=False, default=False)
 
+    # Delete join rows automatically when an exercise is removed so the association stays consistent.
     workout_exercises = db.relationship(
         "WorkoutExercise",
         back_populates="exercise",
         cascade="all, delete-orphan"
     )
 
+    # This relationship is read-only; workout rows are created through WorkoutExercise explicitly.
     workouts = db.relationship(
         "Workout",
         secondary="workout_exercises",
@@ -62,12 +64,14 @@ class Workout(db.Model):
 
     notes = db.Column(db.Text)
 
+    # Delete join rows automatically when a workout is removed so the association stays consistent.
     workout_exercises = db.relationship(
         "WorkoutExercise",
         back_populates="workout",
         cascade="all, delete-orphan"
     )
 
+    # This relationship is read-only; workout rows are created through WorkoutExercise explicitly.
     exercises = db.relationship(
         "Exercise",
         secondary="workout_exercises",
