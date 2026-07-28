@@ -15,14 +15,12 @@ The API enforces data integrity at three layers: database table constraints, SQL
 ### Steps
 
 ```bash
-git clone https://github.com/<your-username>/workout-tracker-api.git
-cd workout-tracker-api
+git clone https://github.com/Ethanpaul1/Workout-api.git
+cd Workout-api
 pipenv install
 pipenv shell
-cd server
-flask db init
-flask db migrate -m "initial migration"
 flask db upgrade head
+cd server
 python seed.py
 ```
 
