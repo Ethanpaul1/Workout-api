@@ -19,8 +19,7 @@ git clone https://github.com/Ethanpaul1/Workout-api.git
 cd Workout-api
 pipenv install
 pipenv shell
-$env:FLASK_APP="server/app.py"   # on macOS/Linux use: export FLASK_APP=server/app.py
-flask db upgrade head
+flask --app server.app db upgrade head
 cd server
 python seed.py
 ```
@@ -29,8 +28,7 @@ python seed.py
 
 ```bash
 cd server
-$env:FLASK_APP="app.py"   # on macOS/Linux use: export FLASK_APP=app.py
-flask run --port=5555
+flask --app app.py run --port=5555
 ```
 
 The API will be available at http://localhost:5555.
